@@ -5,6 +5,17 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 import os
 import pickle
+from datetime import datetime
+
+def unix_time_to_datetime(dataframe, column, new_column_name):
+    df = dataframe.copy()
+    df[new_column_name] = None
+    for index, row in df.iterrows():
+        time = datetime.utcfromtimestamp(int(row[column])).strftime('%Y-%m-%d')
+        df.at[index,new_column_name] = time
+    return df
+        
+        
 
 class DataCollect:
     def __init__(self):
@@ -22,6 +33,7 @@ class DataCollect:
         response = requests.get(quandl_api_url).json()
         output = pd.DataFrame(response['dataset']['data'],columns = name_list)
         return output
+    
     
     
     def pull_sheet(self,mining_equipment_url, range_name = 'SHA-256!A:J',
@@ -81,7 +93,16 @@ class DataCollect:
             print('Data Successfully loaded.')
             print("Data version: "+values[1][0])
             df = pd.DataFrame(values[4:], columns=values[3][0:9])
-            print('The shape of data is {}'.format(df.shape))
-            dataframe = df
+            df = df[pd.notnull(df['UNIX_date_of_release'])]
+            df = df[df['Power (W)'] != '']
             
+            ##change type: str to float
+            column_list = ['Power (W)','Hashing power (Th/s)','Efficiency_J_Gh']
+            for column in column_list:
+                df[column] = df[column].str.replace(',','')
+                df[column] = df[column].astype('float')
+            
+            df = df.reset_index(drop = True)
+            print('The shape of data is {}'.format(df.shape))
+            dataframe = unix_time_to_datetime(df, 'UNIX_date_of_release', 'UNIX_date_of_release_tran')
             return dataframe
