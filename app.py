@@ -21,8 +21,8 @@ if __name__ == "__main__":
     
     ewaste = EWaste(miner_revenue,network_hashrate,mining_equipment)
     ewaste.calculate_daily_cost(electricity_cost= electricity_cost)
-    output = ewaste.calculate_daily_rev()
-    output.to_excel('test.xlsx',index = False)
+    ewaste.calculate_daily_rev()
+    
    
 
     
