@@ -20,8 +20,13 @@ if __name__ == "__main__":
     ## model calculation starts here
     
     ewaste = EWaste(miner_revenue,network_hashrate,mining_equipment)
-    ewaste.calculate_daily_cost(electricity_cost= electricity_cost)
-    ewaste.calculate_daily_rev()
+    mining_equipment = ewaste.calculate_daily_cost(electricity_cost= electricity_cost)
+    miner_revenue = ewaste.calculate_daily_rev()
+    miner_profitability = ewaste.calculate_profitability()
+    
+    mining_equipment.to_excel('mining_equipment.xlsx',index = False)
+    miner_revenue.to_excel('miner_revenue.xlsx',index = False)
+    miner_profitability.to_excel('miner_profitability.xlsx',index = False)
     
    
 

@@ -39,5 +39,30 @@ class EWaste:
         
         return self.miner_revenue
     
-    def calculate_profitability():
-        pass
+    def calculate_profitability(self):
+        ## change format to datetime
+        miner_rev_date = self.miner_revenue.columns[0]
+        storage = []
+        self.mining_equipment['UNIX_date_of_release_tran'] = pd.to_datetime(self.mining_equipment['UNIX_date_of_release_tran'])
+        for index, row in self.mining_equipment.iterrows():
+            release_date = row['UNIX_date_of_release_tran']
+            equipment_name = row['Miner_name']
+            cost_per_ths = row['Costs per Thash/s in $']
+            sub_rev = self.miner_revenue[self.miner_revenue[miner_rev_date]>= release_date]
+            sub_rev['Miner_name'] = equipment_name
+            sub_rev['UNIX_date_of_release_tran'] = release_date
+            sub_rev['is_release'] = True
+            sub_rev['Costs per Thash/s in $'] = cost_per_ths
+            storage.append(sub_rev)
+            
+        output = pd.concat(storage)
+        output = output.reset_index(drop = True)
+        output['is_profitable'] = None
+        for index, row in output.iterrows():
+            if row['Rev per Thash/s in $'] - row['Costs per Thash/s in $'] >= 0:
+                output.at[index,'is_profitable'] = True
+            else:
+                output.at[index,'is_profitable'] = False
+        self.miner_profitability = output
+        return self.miner_profitability
+            
