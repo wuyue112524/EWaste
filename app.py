@@ -1,6 +1,7 @@
 from src.DataCollect import DataCollect
 from src.EWaste import EWaste
 import os
+import time
 from dotenv import load_dotenv
 
 
@@ -14,6 +15,7 @@ if __name__ == "__main__":
     ## load data here
     data_loader = DataCollect()
     miner_revenue = data_loader.load_quandl_api(miner_revenue_url,['date','miner_rev'])
+    time.sleep(2)
     network_hashrate = data_loader.load_quandl_api(network_hashrate_url,['date','network_hashrate'])
     mining_equipment = data_loader.pull_sheet(mining_equipment_url)
     
