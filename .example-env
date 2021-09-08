@@ -1,0 +1,5 @@
+quandl_api_key = your_quandl_api_key
+miner_revenue_code = BCHAIN/MIREV
+network_hashrate_code = BCHAIN/HRATE
+mining_equipment_url = https://docs.google.com/spreadsheets/d/1ciqka_-t0zDSOVyB4yhVZBfLFGKwJMlQ2EwA0CB1ljM/
+electricity_cost = 0.05

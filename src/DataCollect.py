@@ -1,4 +1,3 @@
-import requests
 import pandas as pd
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -6,6 +5,7 @@ from googleapiclient.discovery import build
 import os
 import pickle
 from datetime import datetime
+import quandl
 
 def unix_time_to_datetime(dataframe, column, new_column_name):
     df = dataframe.copy()
@@ -22,7 +22,7 @@ class DataCollect:
         pass
 
     
-    def load_quandl_api(self,quandl_api_url,name_list):
+    def load_quandl_api(self,quandl_code,name_list,quandl_api = None):
         '''
         param:
         load data from quandl in json format
@@ -30,8 +30,13 @@ class DataCollect:
             a list of column name for aquired data from quandl api, eg. ['date','miner_rev']
 
         '''
-        response = requests.get(quandl_api_url).json()
-        output = pd.DataFrame(response['dataset']['data'],columns = name_list)
+        if quandl_api is not None:
+            quandl.ApiConfig.api_key = quandl_api
+            
+            
+        output =  quandl.get(quandl_code).reset_index(drop = False)
+        output.columns = name_list
+        
         return output
     
     
@@ -92,7 +97,8 @@ class DataCollect:
         else:
             print('Data Successfully loaded.')
             print("Data version: "+values[1][0])
-            df = pd.DataFrame(values[4:], columns=values[3][0:9])
+            print(values[3])
+            df = pd.DataFrame(values[4:], columns=values[3])
             df = df[pd.notnull(df['UNIX_date_of_release'])]
             df = df[df['Power (W)'] != '']
             
