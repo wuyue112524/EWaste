@@ -10,3 +10,4 @@
 .pickle
 .json
 .env
+test/

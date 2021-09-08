@@ -57,12 +57,33 @@ class DataTransform:
             
         output = pd.concat(storage)
         output = output.reset_index(drop = True)
+        
+        storage_2 = []
         output['is_profitable'] = None
-        for index, row in output.iterrows():
-            if row['Rev per Thash/s in $'] - row['Costs per Thash/s in $'] >= 0:
-                output.at[index,'is_profitable'] = True
-            else:
-                output.at[index,'is_profitable'] = False
-        self.miner_profitability = output
+        output['cum_unprofitable_days'] = None
+        miner_name_list = output['Miner_name'].unique()
+        for miner in miner_name_list:
+            sub_df = output[output['Miner_name'] == miner]
+            sub_df = sub_df.sort_values(miner_rev_date,ascending= True)
+            sub_df = sub_df.reset_index(drop = True)
+            i = 0
+            for index, row in sub_df.iterrows():
+                if row['Rev per Thash/s in $'] - row['Costs per Thash/s in $'] >= 0:
+                    sub_df.at[index,'is_profitable'] = True
+                    sub_df.at[index,'cum_unprofitable_days'] = i
+                else:
+                    sub_df.at[index,'is_profitable'] = False
+                    i += 1
+                    sub_df.at[index,'cum_unprofitable_days'] = i
+            storage_2.append(sub_df)
+        
+        output_2 = pd.concat(storage_2)
+                
+        
+    
+        self.miner_profitability = output_2
         return self.miner_profitability
+    
+
+        
             
