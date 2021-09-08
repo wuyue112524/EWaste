@@ -1,5 +1,6 @@
 from src.DataCollect import DataCollect
 from src.DataTransform import DataTransform
+from src.InsDiscardModel import InsDiscardModel
 import os
 from dotenv import load_dotenv
 
@@ -26,9 +27,14 @@ if __name__ == "__main__":
     miner_revenue = data_transformer.calculate_daily_rev()
     miner_profitability = data_transformer.calculate_profitability()
     
-    mining_equipment.to_excel('mining_equipment.xlsx',index = False)
-    miner_revenue.to_excel('miner_revenue.xlsx',index = False)
-    miner_profitability.to_excel('miner_profitability.xlsx',index = False)
+    ## Instant Discard Model
+    insDiscard_model = InsDiscardModel(mining_equipment,miner_revenue,miner_profitability)
+    miner_hashrate_attribution = insDiscard_model.attribute_hashrate(instant_discard_days = 1)
+    ewaste = insDiscard_model.calculate_ewaste(instant_discard_days=1)
+    
+    
+    
+    
     
    
 

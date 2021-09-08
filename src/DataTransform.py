@@ -18,7 +18,7 @@ class DataTransform:
         
     def calculate_daily_cost(self,electricity_cost):
         self.mining_equipment['Costs per day in $'] = self.mining_equipment['Power (W)'] / 1000 * electricity_cost * 24
-        self.mining_equipment['Th/s of Miner'] = self.mining_equipment['Power (W)'] / self.mining_equipment['Efficiency_J_Gh']/1000
+        self.mining_equipment['Th/s of Miner'] = round(self.mining_equipment['Power (W)'] / self.mining_equipment['Efficiency_J_Gh']/1000,4)
         self.mining_equipment['Costs per Thash/s in $'] = 1 / self.mining_equipment['Th/s of Miner'] * self.mining_equipment['Costs per day in $']
         
         return self.mining_equipment
