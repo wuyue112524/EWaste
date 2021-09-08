@@ -31,7 +31,7 @@ if __name__ == "__main__":
     insDiscard_model = InsDiscardModel(mining_equipment,miner_revenue,miner_profitability)
     miner_hashrate_attribution = insDiscard_model.attribute_hashrate(instant_discard_days = 1)
     ewaste = insDiscard_model.calculate_ewaste(instant_discard_days=1)
-    
+    graph = insDiscard_model.graph_data_export()
     
     
     
