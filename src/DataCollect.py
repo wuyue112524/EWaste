@@ -103,7 +103,7 @@ class DataCollect:
             df = df[df['Power (W)'] != '']
             
             ##change type: str to float
-            column_list = ['Power (W)','Hashing power (Th/s)','Efficiency_J_Gh']
+            column_list = ['Power (W)','Hashing power (Th/s)','Efficiency_J_Gh','Weight in kg']
             for column in column_list:
                 df[column] = df[column].str.replace(',','')
                 df[column] = df[column].astype('float')
