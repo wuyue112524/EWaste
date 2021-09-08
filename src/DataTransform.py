@@ -20,7 +20,7 @@ class DataTransform:
         self.mining_equipment['Costs per day in $'] = self.mining_equipment['Power (W)'] / 1000 * electricity_cost * 24
         self.mining_equipment['Th/s of Miner'] = round(self.mining_equipment['Power (W)'] / self.mining_equipment['Efficiency_J_Gh']/1000,4)
         self.mining_equipment['Costs per Thash/s in $'] = 1 / self.mining_equipment['Th/s of Miner'] * self.mining_equipment['Costs per day in $']
-        
+        self.mining_equipment['electricity_cost'] = electricity_cost
         return self.mining_equipment
         
         
