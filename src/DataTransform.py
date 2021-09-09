@@ -58,32 +58,65 @@ class DataTransform:
         output = pd.concat(storage)
         output = output.reset_index(drop = True)
         
-        storage_2 = []
-        output['is_profitable'] = None
-        output['cum_unprofitable_days'] = None
-        miner_name_list = output['Miner_name'].unique()
-        for miner in miner_name_list:
-            sub_df = output[output['Miner_name'] == miner]
-            sub_df = sub_df.sort_values(miner_rev_date,ascending= True)
-            sub_df = sub_df.reset_index(drop = True)
-            i = 0
-            for index, row in sub_df.iterrows():
-                if row['Rev per Thash/s in $'] - row['Costs per Thash/s in $'] >= 0:
-                    sub_df.at[index,'is_profitable'] = True
-                    sub_df.at[index,'cum_unprofitable_days'] = i
-                else:
-                    sub_df.at[index,'is_profitable'] = False
-                    i += 1
-                    sub_df.at[index,'cum_unprofitable_days'] = i
-            storage_2.append(sub_df)
         
-        output_2 = pd.concat(storage_2)
+        ## calculate is_profitable and cumulative unprofitable days
+        output['profit'] = output['Rev per Thash/s in $'] - output['Costs per Thash/s in $']
+        output['is_profitable'] = output['profit'].apply(self.__is_profitable)
+        output['is_profitable_num'] = output['is_profitable'].apply(self.__is_profitable_num)
+        
+        ## generate a pivot table to calculate cum unprofitable days for each miner
+        unprofitable = pd.pivot(output,index = miner_rev_date, columns= 'Miner_name',
+                                values = 'is_profitable_num')
+        unprofitable_cum = pd.DataFrame()
+        
+        for column in unprofitable.columns:
+            unprofitable_cum[column] = unprofitable[column].cumsum()
+        
+        ## melt back to long format
+        unprofitable_cum_long = pd.melt(unprofitable_cum,value_vars= None,var_name = 'Miner_name',
+                    value_name= 'cum_unprofitable_days',ignore_index= False)
+        
+        unprofitable_cum_long = unprofitable_cum_long.reset_index(drop = False)
+        output_2 = pd.merge(output, unprofitable_cum_long, how = 'left', on = [miner_rev_date,'Miner_name'])
+        
+        
+        
+        # storage_2 = []
+        # output['is_profitable'] = None
+        # output['cum_unprofitable_days'] = None
+        # miner_name_list = output['Miner_name'].unique()
+        # for miner in miner_name_list:
+        #     sub_df = output[output['Miner_name'] == miner]
+        #     sub_df = sub_df.sort_values(miner_rev_date,ascending= True)
+        #     sub_df = sub_df.reset_index(drop = True)
+        #     i = 0
+        #     for index, row in sub_df.iterrows():
+        #         if row['Rev per Thash/s in $'] - row['Costs per Thash/s in $'] >= 0:
+        #             sub_df.at[index,'is_profitable'] = True
+        #             sub_df.at[index,'cum_unprofitable_days'] = i
+        #         else:
+        #             sub_df.at[index,'is_profitable'] = False
+        #             i += 1
+        #             sub_df.at[index,'cum_unprofitable_days'] = i
+        #    storage_2.append(sub_df)
+        
+        #output_2 = pd.concat(storage_2)
                 
         
     
         self.miner_profitability = output_2
         return self.miner_profitability
     
-
+    def __is_profitable(self,x):
+        if x >= 0:
+            return True
+        else:
+            return False
+    
+    def __is_profitable_num(self,x):
+        if x == True:
+            return 0
+        else:
+            return 1
         
             
