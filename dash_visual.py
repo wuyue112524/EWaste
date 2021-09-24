@@ -83,4 +83,4 @@ def update_figure(selected_elect_tricity_cost,instant_discard_days):
     return fig
 
 if __name__ == "__main__":
-    app.run_server(debug = True)
+    app.run_server()
