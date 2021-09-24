@@ -1,6 +1,7 @@
 from src.DataCollect import DataCollect
 from src.DataTransform import DataTransform
 from src.InsDiscardModel import InsDiscardModel
+from src.GraDiscardModel import GraDiscardModel
 import os
 from dotenv import load_dotenv
 
@@ -28,11 +29,16 @@ if __name__ == "__main__":
     miner_profitability = data_transformer.calculate_profitability()
     
     ## Instant Discard Model
-    insDiscard_model = InsDiscardModel(mining_equipment,miner_revenue,miner_profitability)
-    miner_hashrate_attribution = insDiscard_model.attribute_hashrate(instant_discard_days = 1)
-    ewaste = insDiscard_model.calculate_ewaste(instant_discard_days=1)
-    graph = insDiscard_model.graph_data_export()
-    graph.to_excel('graph_0.05.xlsx',index = False)
+    #insDiscard_model = InsDiscardModel(mining_equipment,miner_revenue,miner_profitability)
+    #miner_hashrate_attribution = insDiscard_model.attribute_hashrate(instant_discard_days = 1)
+    #ewaste = insDiscard_model.calculate_ewaste(instant_discard_days=1)
+    #graph = insDiscard_model.graph_data_export()
+    #graph.to_excel('graph_0.05.xlsx',index = False)
+    
+    ## Gradual Discard Model
+    graDiscard_model = GraDiscardModel(mining_equipment,miner_revenue,miner_profitability)
+    graDiscard_model.calculate_miner_quantity(discard_days = 365)
+    ewaste = graDiscard_model.calculate_ewaste()
     
     
     

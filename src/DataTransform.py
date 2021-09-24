@@ -74,7 +74,7 @@ class DataTransform:
         
         ## melt back to long format
         unprofitable_cum_long = pd.melt(unprofitable_cum,value_vars= None,var_name = 'Miner_name',
-                    value_name= 'cum_unprofitable_days',ignore_index= False)
+                                        value_name= 'cum_unprofitable_days',ignore_index= False)
         
         unprofitable_cum_long = unprofitable_cum_long.reset_index(drop = False)
         output_2 = pd.merge(output, unprofitable_cum_long, how = 'left', on = [miner_rev_date,'Miner_name'])
