@@ -21,24 +21,20 @@ class GraDiscardModel:
         
     
     def attribute_hashrate(self):
+        
         miner_prof_date = self.miner_profitability.columns[0]
-        self.miner_profitability[miner_prof_date] = pd.to_datetime(self.miner_profitability[miner_prof_date])
-        date_list = self.miner_profitability[miner_prof_date].unique()
-        df_list = []
-        for date in date_list:
-            storage = {}
-            sub_df = self.miner_profitability[self.miner_profitability[miner_prof_date] == date]
-            num_profitable_model = sub_df[sub_df['cum_unprofitable_days'] < self.discard_days].shape[0]
-            num_everprofitable_model = sub_df[sub_df['cum_unprofitable_days']== 0].shape[0]
-            network_hashrate = sub_df['network_hashrate'].unique()[0]
-            storage[miner_prof_date] = date
-            storage['profitable_model'] = num_profitable_model
-            storage['network_hashrate'] = network_hashrate
-            storage['ever_profitable_model'] = num_everprofitable_model
-            df_list.append(storage)
-        output = pd.DataFrame(df_list)
-        output['Ths attribution per model'] = output['network_hashrate'] / output['profitable_model']
-        self.miner_hashrate_attribution  = output
+        def func(x,discard_days):
+            if x <= discard_days:
+             return True
+            else:
+                return False
+            
+        self.miner_profitability['is_active'] = self.miner_profitability['cum_unprofitable_days'].apply(func,discard_days = self.discard_days)
+        self.miner_profitability['is_ever_profitable'] = self.miner_profitability['cum_unprofitable_days'].apply(func,discard_days = 0)
+        self.miner_hashrate_attribution = self.miner_profitability.groupby(miner_prof_date,as_index = False).agg({'is_active':'sum','is_ever_profitable':'sum','network_hashrate':'max'})
+        self.miner_hashrate_attribution.columns = [miner_prof_date,'profitable_model','ever_profitable_model','network_hashrate']
+        self.miner_hashrate_attribution['Ths attribution per model'] = self.miner_hashrate_attribution['network_hashrate'] / self.miner_hashrate_attribution['profitable_model']
+
         
     
     def miner_mix_1st_round(self):
