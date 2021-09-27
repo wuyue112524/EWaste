@@ -9,17 +9,40 @@ import pandas as pd
 from src.DataCollect import DataCollect
 from src.DataTransform import DataTransform
 from src.InsDiscardModel import InsDiscardModel
+import psycopg2
+import yaml
+from sqlalchemy import create_engine
 
-load_dotenv()
-miner_revenue_code = os.getenv('miner_revenue_code')
-network_hashrate_code = os.getenv('network_hashrate_code')
-mining_equipment_url = os.getenv('mining_equipment_url')
-quandl_api = os.getenv('quandl_api_key',None)
+def read_table(config,database,table_name):
+    with psycopg2.connect(**config[database]) as connection:
+        c =  connection.cursor()
+        query = "select * from {};".format(table_name)
+        
+        c.execute(query)
+        values = c.fetchall()
+        
+        col_names = []
+        for elt in c.description:
+            col_names.append(elt[0])
+        df = pd.DataFrame(values, columns = col_names)
+    return df
 
-data_loader = DataCollect()
-miner_revenue_original = data_loader.load_quandl_api(miner_revenue_code,['date','miner_rev'],quandl_api)
-network_hashrate_original = data_loader.load_quandl_api(network_hashrate_code,['date','network_hashrate'],quandl_api)
-mining_equipment_original = data_loader.pull_sheet(mining_equipment_url)
+
+#load_dotenv()
+#miner_revenue_code = os.getenv('miner_revenue_code')
+#network_hashrate_code = os.getenv('network_hashrate_code')
+#mining_equipment_url = os.getenv('mining_equipment_url')
+#quandl_api = os.getenv('quandl_api_key',None)
+
+#data_loader = DataCollect()
+#miner_revenue_original = data_loader.load_quandl_api(miner_revenue_code,['date','miner_rev'],quandl_api)
+#network_hashrate_original = data_loader.load_quandl_api(network_hashrate_code,['date','network_hashrate'],quandl_api)
+#mining_equipment_original = data_loader.pull_sheet(mining_equipment_url)
+
+
+
+
+
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -83,4 +106,17 @@ def update_figure(selected_elect_tricity_cost,instant_discard_days):
     return fig
 
 if __name__ == "__main__":
+    config_path = 'C:/Users/clair/CCAF/Week45 0830-0903/E-waste coding/EWaste/config.yml'
+
+    with open(config_path) as credential:
+        config = yaml.load(credential,Loader = yaml.FullLoader)
+
+    mining_equipment_original = read_table(config,'ewaste','mining_equipment')
+    miner_revenue_original =  read_table(config,'ewaste','miner_revenue')
+    network_hashrate_original = read_table(config,'ewaste','network_hashrate')
+ 
+    column_list = ['Power (W)','Hashing power (Th/s)','Efficiency_J_Gh','Weight in kg']
+    for column in column_list:            
+        mining_equipment_original[column] = mining_equipment_original[column].astype('float')
+        
     app.run_server()

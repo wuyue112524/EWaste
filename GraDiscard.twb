@@ -29,12 +29,15 @@
       <column caption='Electricity cost in $' datatype='real' name='[Parameter 4]' param-domain-type='any' role='measure' type='quantitative' value='0.05'>
         <calculation class='tableau' formula='0.05' />
       </column>
+      <column caption='db_credential' datatype='string' name='[Parameter 5]' param-domain-type='any' role='measure' type='nominal' value='&quot;C:/Users/clair/CCAF/Week45 0830-0903/E-waste coding/EWaste/config.yml&quot;'>
+        <calculation class='tableau' formula='&quot;C:/Users/clair/CCAF/Week45 0830-0903/E-waste coding/EWaste/config.yml&quot;' />
+      </column>
     </datasource>
     <datasource caption='Sheet1 (ewaste)' inline='true' name='federated.09bnwe203l4fp715r7n2r0pvq9qp' version='18.1'>
       <connection class='federated'>
         <named-connections>
           <named-connection caption='ewaste' name='excel-direct.16g2wyf1wik8541fpv4qz18dikbe'>
-            <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:/Users/clair/CCAF/Week45 0830-0903/E-waste coding/EWaste/test/gradual_discard/ewaste.xlsx' interpretationMode='0' password='' server='' validate='no' />
+            <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:/Users/clair/CCAF/Week45 0830-0903/E-waste coding/EWaste/test/gradual_discard/ewaste_new.xlsx' interpretationMode='0' password='' server='' validate='no' />
           </named-connection>
         </named-connections>
         <_.fcp.ObjectModelEncapsulateLegacy.false...relation connection='excel-direct.16g2wyf1wik8541fpv4qz18dikbe' name='Sheet1' table='[Sheet1$]' type='table'>
@@ -56,7 +59,6 @@
             <parent-name>[Sheet1]</parent-name>
             <remote-alias />
             <aggregation>Count</aggregation>
-            <approx-count>46</approx-count>
             <contains-null>true</contains-null>
             <attributes>
               <attribute datatype='integer' name='context'>0</attribute>
@@ -98,7 +100,7 @@
       </connection>
       <aliases enabled='yes' />
       <column caption='python_cal' datatype='real' name='[Calculation_2167075866663096320]' role='measure' type='quantitative'>
-        <calculation class='tableau' formula='SCRIPT_REAL(&#13;&#10;&quot;import os&#13;&#10;import sys&#13;&#10;sys.path.append(_arg2[0])&#13;&#10;sys.path.append(_arg3[0])&#13;&#10;from DataCollect import DataCollect&#13;&#10;from DataTransform import DataTransform&#13;&#10;from InsDiscardModel import InsDiscardModel&#13;&#10;from GraDiscardModel import GraDiscardModel&#13;&#10;&#13;&#10;&#13;&#10;miner_revenue_code = &apos;BCHAIN/MIREV&apos;&#13;&#10;network_hashrate_code = &apos;BCHAIN/HRATE&apos;&#13;&#10;mining_equipment_url = &apos;https://docs.google.com/spreadsheets/d/1ciqka_-t0zDSOVyB4yhVZBfLFGKwJMlQ2EwA0CB1ljM/&apos;&#13;&#10;quandl_api = &apos;_MLa9e3Lm9QKSNfZSu1L&apos;&#13;&#10;electricity_cost = _arg4[0]&#13;&#10;## load data here&#13;&#10;data_loader = DataCollect()&#13;&#10;miner_revenue = data_loader.load_quandl_api(miner_revenue_code,[&apos;date&apos;,&apos;miner_rev&apos;],quandl_api)&#13;&#10;    &#13;&#10;network_hashrate = data_loader.load_quandl_api(network_hashrate_code,[&apos;date&apos;,&apos;network_hashrate&apos;],quandl_api)&#13;&#10;mining_equipment = data_loader.pull_sheet(mining_equipment_url)&#13;&#10;print(&apos;finish loading data&apos;)&#13;&#10;&#13;&#10;## model calculation starts here&#13;&#10;    &#13;&#10;data_transformer = DataTransform(miner_revenue,network_hashrate,mining_equipment)&#13;&#10;mining_equipment = data_transformer.calculate_daily_cost(electricity_cost= electricity_cost)&#13;&#10;miner_revenue = data_transformer.calculate_daily_rev()&#13;&#10;print(&apos;finish transforming data&apos;)&#13;&#10;&#13;&#10;miner_profitability = data_transformer.calculate_profitability()&#13;&#10;graDiscard_model = GraDiscardModel(mining_equipment,miner_revenue,miner_profitability)&#13;&#10;graDiscard_model.calculate_miner_quantity(_arg1[0])&#13;&#10;print(&apos;finish model calculation&apos;)&#13;&#10;ewaste = graDiscard_model.calculate_ewaste()&#13;&#10;return ewaste[&apos;daily_discard_ewaste_in_tons&apos;].to_list()&quot;&#13;&#10;,[Parameters].[Parameter 1],[Parameters].[Parameter 2],[Parameters].[Parameter 3],[Parameters].[Parameter 4])'>
+        <calculation class='tableau' formula='SCRIPT_REAL(&#13;&#10;&quot;import os&#13;&#10;import sys&#13;&#10;sys.path.append(_arg2[0])&#13;&#10;sys.path.append(_arg3[0])&#13;&#10;from DataCollect import DataCollect&#13;&#10;from DataTransform import DataTransform&#13;&#10;from InsDiscardModel import InsDiscardModel&#13;&#10;from GraDiscardModel import GraDiscardModel&#13;&#10;from utils import read_table&#13;&#10;import psycopg2&#13;&#10;import yaml&#13;&#10;from sqlalchemy import create_engine&#13;&#10;import pandas as pd&#13;&#10;&#13;&#10;&#13;&#10;##miner_revenue_code = &apos;BCHAIN/MIREV&apos;&#13;&#10;##network_hashrate_code = &apos;BCHAIN/HRATE&apos;&#13;&#10;##mining_equipment_url = &apos;https://docs.google.com/spreadsheets/d/1ciqka_-t0zDSOVyB4yhVZBfLFGKwJMlQ2EwA0CB1ljM/&apos;&#13;&#10;##quandl_api = &apos;_MLa9e3Lm9QKSNfZSu1L&apos;&#13;&#10;##electricity_cost = _arg4[0]&#13;&#10;## load data here&#13;&#10;##data_loader = DataCollect()&#13;&#10;##miner_revenue = data_loader.load_quandl_api(miner_revenue_code,[&apos;date&apos;,&apos;miner_rev&apos;],quandl_api)&#13;&#10;    &#13;&#10;##network_hashrate = data_loader.load_quandl_api(network_hashrate_code,[&apos;date&apos;,&apos;network_hashrate&apos;],quandl_api)&#13;&#10;##mining_equipment = data_loader.pull_sheet(mining_equipment_url)&#13;&#10;&#13;&#10;&#13;&#10;&#13;&#10;config_path = _arg5[0]&#13;&#10;with open(config_path) as credential:&#13;&#10;    config = yaml.load(credential,Loader = yaml.FullLoader)&#13;&#10;&#13;&#10;mining_equipment = read_table(config,&apos;ewaste&apos;,&apos;mining_equipment&apos;)&#13;&#10;miner_revenue =  read_table(config,&apos;ewaste&apos;,&apos;miner_revenue&apos;)&#13;&#10;network_hashrate = read_table(config,&apos;ewaste&apos;,&apos;network_hashrate&apos;)&#13;&#10;column_list = [&apos;Power (W)&apos;,&apos;Hashing power (Th/s)&apos;,&apos;Efficiency_J_Gh&apos;,&apos;Weight in kg&apos;]&#13;&#10;for column in column_list:            &#13;&#10;    mining_equipment[column] = mining_equipment[column].astype(&apos;float&apos;)&#13;&#10;&#13;&#10;&#13;&#10;&#13;&#10;electricity_cost = _arg4[0]&#13;&#10;print(&apos;finish loading data&apos;)&#13;&#10;&#13;&#10;## model calculation starts here&#13;&#10;    &#13;&#10;data_transformer = DataTransform(miner_revenue,network_hashrate,mining_equipment)&#13;&#10;mining_equipment = data_transformer.calculate_daily_cost(electricity_cost= electricity_cost)&#13;&#10;miner_revenue = data_transformer.calculate_daily_rev()&#13;&#10;print(&apos;finish transforming data&apos;)&#13;&#10;&#13;&#10;miner_profitability = data_transformer.calculate_profitability()&#13;&#10;graDiscard_model = GraDiscardModel(mining_equipment,miner_revenue,miner_profitability)&#13;&#10;graDiscard_model.calculate_miner_quantity(_arg1[0])&#13;&#10;print(&apos;finish model calculation&apos;)&#13;&#10;ewaste = graDiscard_model.calculate_ewaste()&#13;&#10;return ewaste[&apos;daily_discard_ewaste_in_tons&apos;].to_list()&quot;&#13;&#10;,[Parameters].[Parameter 1],[Parameters].[Parameter 2],[Parameters].[Parameter 3],[Parameters].[Parameter 4],[Parameters].[Parameter 5])'>
           <table-calc ordering-type='Rows' />
         </calculation>
       </column>
@@ -121,6 +123,9 @@
         </column>
         <column caption='Electricity cost in $' datatype='real' name='[Parameter 4]' param-domain-type='any' role='measure' type='quantitative' value='0.05'>
           <calculation class='tableau' formula='0.05' />
+        </column>
+        <column caption='db_credential' datatype='string' name='[Parameter 5]' param-domain-type='any' role='measure' type='nominal' value='&quot;C:/Users/clair/CCAF/Week45 0830-0903/E-waste coding/EWaste/config.yml&quot;'>
+          <calculation class='tableau' formula='&quot;C:/Users/clair/CCAF/Week45 0830-0903/E-waste coding/EWaste/config.yml&quot;' />
         </column>
       </datasource-dependencies>
       <_.fcp.ObjectModelEncapsulateLegacy.true...object-graph>
@@ -167,10 +172,13 @@
             <column caption='Electricity cost in $' datatype='real' name='[Parameter 4]' param-domain-type='any' role='measure' type='quantitative' value='0.05'>
               <calculation class='tableau' formula='0.05' />
             </column>
+            <column caption='db_credential' datatype='string' name='[Parameter 5]' param-domain-type='any' role='measure' type='nominal' value='&quot;C:/Users/clair/CCAF/Week45 0830-0903/E-waste coding/EWaste/config.yml&quot;'>
+              <calculation class='tableau' formula='&quot;C:/Users/clair/CCAF/Week45 0830-0903/E-waste coding/EWaste/config.yml&quot;' />
+            </column>
           </datasource-dependencies>
           <datasource-dependencies datasource='federated.09bnwe203l4fp715r7n2r0pvq9qp'>
             <column caption='python_cal' datatype='real' name='[Calculation_2167075866663096320]' role='measure' type='quantitative'>
-              <calculation class='tableau' formula='SCRIPT_REAL(&#13;&#10;&quot;import os&#13;&#10;import sys&#13;&#10;sys.path.append(_arg2[0])&#13;&#10;sys.path.append(_arg3[0])&#13;&#10;from DataCollect import DataCollect&#13;&#10;from DataTransform import DataTransform&#13;&#10;from InsDiscardModel import InsDiscardModel&#13;&#10;from GraDiscardModel import GraDiscardModel&#13;&#10;&#13;&#10;&#13;&#10;miner_revenue_code = &apos;BCHAIN/MIREV&apos;&#13;&#10;network_hashrate_code = &apos;BCHAIN/HRATE&apos;&#13;&#10;mining_equipment_url = &apos;https://docs.google.com/spreadsheets/d/1ciqka_-t0zDSOVyB4yhVZBfLFGKwJMlQ2EwA0CB1ljM/&apos;&#13;&#10;quandl_api = &apos;_MLa9e3Lm9QKSNfZSu1L&apos;&#13;&#10;electricity_cost = _arg4[0]&#13;&#10;## load data here&#13;&#10;data_loader = DataCollect()&#13;&#10;miner_revenue = data_loader.load_quandl_api(miner_revenue_code,[&apos;date&apos;,&apos;miner_rev&apos;],quandl_api)&#13;&#10;    &#13;&#10;network_hashrate = data_loader.load_quandl_api(network_hashrate_code,[&apos;date&apos;,&apos;network_hashrate&apos;],quandl_api)&#13;&#10;mining_equipment = data_loader.pull_sheet(mining_equipment_url)&#13;&#10;print(&apos;finish loading data&apos;)&#13;&#10;&#13;&#10;## model calculation starts here&#13;&#10;    &#13;&#10;data_transformer = DataTransform(miner_revenue,network_hashrate,mining_equipment)&#13;&#10;mining_equipment = data_transformer.calculate_daily_cost(electricity_cost= electricity_cost)&#13;&#10;miner_revenue = data_transformer.calculate_daily_rev()&#13;&#10;print(&apos;finish transforming data&apos;)&#13;&#10;&#13;&#10;miner_profitability = data_transformer.calculate_profitability()&#13;&#10;graDiscard_model = GraDiscardModel(mining_equipment,miner_revenue,miner_profitability)&#13;&#10;graDiscard_model.calculate_miner_quantity(_arg1[0])&#13;&#10;print(&apos;finish model calculation&apos;)&#13;&#10;ewaste = graDiscard_model.calculate_ewaste()&#13;&#10;return ewaste[&apos;daily_discard_ewaste_in_tons&apos;].to_list()&quot;&#13;&#10;,[Parameters].[Parameter 1],[Parameters].[Parameter 2],[Parameters].[Parameter 3],[Parameters].[Parameter 4])'>
+              <calculation class='tableau' formula='SCRIPT_REAL(&#13;&#10;&quot;import os&#13;&#10;import sys&#13;&#10;sys.path.append(_arg2[0])&#13;&#10;sys.path.append(_arg3[0])&#13;&#10;from DataCollect import DataCollect&#13;&#10;from DataTransform import DataTransform&#13;&#10;from InsDiscardModel import InsDiscardModel&#13;&#10;from GraDiscardModel import GraDiscardModel&#13;&#10;from utils import read_table&#13;&#10;import psycopg2&#13;&#10;import yaml&#13;&#10;from sqlalchemy import create_engine&#13;&#10;import pandas as pd&#13;&#10;&#13;&#10;&#13;&#10;##miner_revenue_code = &apos;BCHAIN/MIREV&apos;&#13;&#10;##network_hashrate_code = &apos;BCHAIN/HRATE&apos;&#13;&#10;##mining_equipment_url = &apos;https://docs.google.com/spreadsheets/d/1ciqka_-t0zDSOVyB4yhVZBfLFGKwJMlQ2EwA0CB1ljM/&apos;&#13;&#10;##quandl_api = &apos;_MLa9e3Lm9QKSNfZSu1L&apos;&#13;&#10;##electricity_cost = _arg4[0]&#13;&#10;## load data here&#13;&#10;##data_loader = DataCollect()&#13;&#10;##miner_revenue = data_loader.load_quandl_api(miner_revenue_code,[&apos;date&apos;,&apos;miner_rev&apos;],quandl_api)&#13;&#10;    &#13;&#10;##network_hashrate = data_loader.load_quandl_api(network_hashrate_code,[&apos;date&apos;,&apos;network_hashrate&apos;],quandl_api)&#13;&#10;##mining_equipment = data_loader.pull_sheet(mining_equipment_url)&#13;&#10;&#13;&#10;&#13;&#10;&#13;&#10;config_path = _arg5[0]&#13;&#10;with open(config_path) as credential:&#13;&#10;    config = yaml.load(credential,Loader = yaml.FullLoader)&#13;&#10;&#13;&#10;mining_equipment = read_table(config,&apos;ewaste&apos;,&apos;mining_equipment&apos;)&#13;&#10;miner_revenue =  read_table(config,&apos;ewaste&apos;,&apos;miner_revenue&apos;)&#13;&#10;network_hashrate = read_table(config,&apos;ewaste&apos;,&apos;network_hashrate&apos;)&#13;&#10;column_list = [&apos;Power (W)&apos;,&apos;Hashing power (Th/s)&apos;,&apos;Efficiency_J_Gh&apos;,&apos;Weight in kg&apos;]&#13;&#10;for column in column_list:            &#13;&#10;    mining_equipment[column] = mining_equipment[column].astype(&apos;float&apos;)&#13;&#10;&#13;&#10;&#13;&#10;&#13;&#10;electricity_cost = _arg4[0]&#13;&#10;print(&apos;finish loading data&apos;)&#13;&#10;&#13;&#10;## model calculation starts here&#13;&#10;    &#13;&#10;data_transformer = DataTransform(miner_revenue,network_hashrate,mining_equipment)&#13;&#10;mining_equipment = data_transformer.calculate_daily_cost(electricity_cost= electricity_cost)&#13;&#10;miner_revenue = data_transformer.calculate_daily_rev()&#13;&#10;print(&apos;finish transforming data&apos;)&#13;&#10;&#13;&#10;miner_profitability = data_transformer.calculate_profitability()&#13;&#10;graDiscard_model = GraDiscardModel(mining_equipment,miner_revenue,miner_profitability)&#13;&#10;graDiscard_model.calculate_miner_quantity(_arg1[0])&#13;&#10;print(&apos;finish model calculation&apos;)&#13;&#10;ewaste = graDiscard_model.calculate_ewaste()&#13;&#10;return ewaste[&apos;daily_discard_ewaste_in_tons&apos;].to_list()&quot;&#13;&#10;,[Parameters].[Parameter 1],[Parameters].[Parameter 2],[Parameters].[Parameter 3],[Parameters].[Parameter 4],[Parameters].[Parameter 5])'>
                 <table-calc ordering-type='Rows' />
               </calculation>
             </column>
@@ -184,7 +192,6 @@
         </view>
         <style>
           <style-rule element='axis'>
-            <format attr='title' class='0' field='[federated.09bnwe203l4fp715r7n2r0pvq9qp].[usr:Calculation_2167075866663096320:qk]' scope='rows' value='' />
             <format attr='title' class='0' field='[federated.09bnwe203l4fp715r7n2r0pvq9qp].[tmn:date:qk]' scope='cols' value='' />
           </style-rule>
         </style>
@@ -249,97 +256,106 @@
   <thumbnails>
     <thumbnail height='192' name='Gradual Discard Model' width='192'>
       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
-      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
+      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
     </thumbnail>
   </thumbnails>
 </workbook>
